@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <title>ระบบรับสมัครงานพนักงานมหาวิทยาลัย - นักวิชาการพัสดุปฏิบัติการ (คณะวารสารศาสตร์ฯ)</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://quota.jc.tu.ac.th/images/jc_logo.png" type="image/png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root {
+            --primary-color: #5e35b1; 
+            --secondary-color: #ffd54f; 
+            --btn-color: #743d88; 
+            --btn-hover: #5e35b1;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* บังคับให้ Swal Container ครอบคลุมทั้งหน้าจอ */
+        .my-swal-container {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 99999 !important;
+        }
+        
+        /* ปรับปรุง Body เพื่อรองรับ Mobile Browser ได้ดีขึ้น */
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #fdfbf7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* สำหรับ Browser ทั่วไป */
+            min-height: -webkit-fill-available; /* สำหรับ Safari iOS */
+            width: 100%; 
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        html {
+            height: -webkit-fill-available;
+        }
+
+        .bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.6;
+        }
+        .shape-1 { width: 300px; height: 300px; background: #ffe0b2; top: -50px; right: -50px; }
+        .shape-2 { width: 200px; height: 200px; background: #e1bee7; bottom: -50px; left: -50px; }
+        
+        .main-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 5px solid var(--primary-color);
+            position: relative;
+        }
+
+        .logo-img {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        h2 {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 25px;
+        }
+
+        .info-box {
+            background-color: var(--secondary-color);
+            color: #4e342e;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--btn-color);
+            color: white;
+            padding: 14px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        /* --- LANDSCAPE OPTIMIZATION --- */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+                height: auto; /* ป้องกันเนื้อหาถูกตัด */
+            }
+            .main-card {
+                max-width: 700px;
+                display: flex; /* เปลี่ยนเป็นแนวนอน */
+                align-items: center;
+                text-align: left;
+                padding: 20px;
+                gap: 20px;
+            }
+            .logo-section {
+                flex: 0 0 120px;
+                text-align: center;
+                border-right: 1px solid #eee;
+                padding-right: 10px;
+            }
+            .content-section {
+                flex: 1;
+            }
+            .logo-img {
+                width: 80px;
+                margin-bottom: 0;
+            }
+            h1 { font-size: 1.2rem; margin-bottom: 5px; }
+            h2 { font-size: 0.9rem; margin-bottom: 10px; }
+            .info-box { 
+                padding: 8px; 
+                margin-bottom: 12px; 
+                font-size: 0.85rem; 
+                text-align: center;
+            }
+            .cta-button { 
+                padding: 10px 20px; 
+                font-size: 0.9rem; 
+            }
+            .bg-shape { display: none; } /* ซ่อนรูปทรงเพื่อความสะอาด */
+        }
+
+        /* สำหรับมือถือแนวตั้งปกติ */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.3rem; }
+            .cta-button { font-size: 0.85rem; padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+
+    <div class="main-card">
+        <div class="logo-section">
+            <img src="https://quota.jc.tu.ac.th/images/jc_logo.png" alt="JC Logo" class="logo-img">
+        </div>
+        
+        <div class="content-section">
+            <h1>ระบบรับสมัครงานพนักงานมหาวิทยาลัย (คณะวารสารศาสตร์ฯ)<br>สายสนับสนุนวิชาการ</h1>
+            <h2>คณะวารสารศาสตร์และสื่อสารมวลชน<br>
+                <strong>ตำแหน่ง นักวิชาการพัสดุปฏิบัติการ</strong>
+            </h2>
+
+            <div class="info-box">
+                📄 กรุณาเข้าสู่ระบบเพื่อสมัครงาน<br>
+               (เมื่อเข้าสู่ระบบท่านสามารถปิดแทบสีฟ้าด้านบนที่เขียนว่า แอปพลิเคชันนี้สร้างโดยผู้ใช้ Google Apps Script ได้เพื่อให้หน้าจอกว้างขึ้น)
+            </div>
+
+            <a id="login-btn" href="#" class="cta-button">
+                CLICK เพื่อเข้าสู่ระบบรับสมัคร
+                <span class="arrow-icon" style="margin-left:10px">➔</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+        function isFacebookApp() { return /FBAN|FBAV/i.test(navigator.userAgent); }
+        function isLineApp() { return /Line/i.test(navigator.userAgent); }
+
+        function setButtonLink() {
+            var btn = document.getElementById('login-btn');
+            var targetUrl = 'https://script.google.com/macros/s/AKfycbwyqR_xEd9QNBa55mck8PaB2z3bfb2IlypiPAEYqjcVVDHfVGf4IQDrDbb8Ip8mVPDt/exec?fbclid=IwY2xjawGBW81leHRuA2FlbQIxMAABHdECaq9rixZtZgvfwaV2L9iShTggX89gCjLHIh8FitvcQ5mbhBO4I3QqMQ_aem_qaiv8lAS75Wqi8JDAy1KaA';
+            
+            if (isIOS() && (isFacebookApp() || isLineApp())) {
+                btn.href = 'x-safari-' + targetUrl;
+            } else {
+                btn.href = targetUrl;
+            }
+        }
+
+        // ส่วนที่แก้ปัญหาการค้างเมื่อกดย้อนกลับ
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted จะเป็น true ถ้าหน้าเว็บถูกโหลดจาก Cache (เช่นการกดย้อนกลับ)
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                Swal.close();
+            }
+        });
+
+        document.getElementById('login-btn').addEventListener('click', function(e) {
+            e.preventDefault(); 
+            var targetUrl = this.href;
+
+            Swal.fire({
+                title: 'กำลังไปที่หน้าสมัครงาน',
+                text: 'กรุณารอสักครู่...',
+                allowOutsideClick: false, 
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+
+            });
+
+            setTimeout(() => { window.location.href = targetUrl; }, 800);
+        });
+
+        setButtonLink();
+    </script>
+</body>
+</html>
