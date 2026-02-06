@@ -218,17 +218,27 @@
         document.getElementById('login-btn').addEventListener('click', function(e) {
             e.preventDefault(); 
             var targetUrl = this.href;
-
+        
             Swal.fire({
                 title: 'กำลังไปที่หน้าสมัครงาน',
                 text: 'กรุณารอสักครู่...',
                 allowOutsideClick: false, 
                 showConfirmButton: false,
-                didOpen: () => { Swal.showLoading(); }
-
+                heightAuto: false,
+                timer: 4000, // << เพิ่มตัวนี้: ถ้าผ่านไป 4 วินาทีแล้วหน้าไม่เปลี่ยน ให้ปิด Loading เอง
+                timerProgressBar: true, // แสดงแถบเวลาถอยหลัง (ช่วยให้ User รู้สึกว่าระบบไม่ได้ค้าง)
+                customClass: {
+                    container: 'my-swal-container'
+                },
+                didOpen: () => { 
+                    Swal.showLoading(); 
+                }
             });
-
-            setTimeout(() => { window.location.href = targetUrl; }, 800);
+        
+            // สำหรับ iOS ในแอป Facebook/Line เราต้องหน่วงเวลาเล็กน้อยก่อนเปลี่ยนหน้า
+            setTimeout(() => { 
+                window.location.href = targetUrl; 
+            }, 500);
         });
 
         setButtonLink();
