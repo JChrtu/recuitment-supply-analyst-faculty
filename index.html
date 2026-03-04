@@ -200,62 +200,62 @@
 
     function setButtonLink() {
         var btn = document.getElementById('login-btn');
-        // ตรวจสอบว่าเป็น iOS และอยู่ใน App หรือไม่
+        // ถ้าเป็น iOS ใน App ให้ใช้ Scheme ล่อไว้ก่อน
         if (isIOS() && (isFacebookApp() || isLineApp())) {
-            // ใช้ x-safari- นำหน้า และตามด้วย https:// เต็มรูปแบบ
             btn.href = 'x-safari-' + targetUrl;
         } else {
             btn.href = targetUrl;
         }
     }
 
-    // แก้ปัญหาการค้างเมื่อกดย้อนกลับ
+    document.getElementById('login-btn').addEventListener('click', function(e) {
+        if (isIOS() && (isFacebookApp() || isLineApp())) {
+            // กรณีอยู่ใน Facebook/Line (iPhone)
+            // เราจะไม่ใช้ e.preventDefault() เพื่อให้ href="x-safari-..." ทำงานทันทีที่คลิก
+            
+            Swal.fire({
+                title: 'กำลังเปิดใน Safari',
+                html: `
+                    <div style="text-align: left; font-size: 0.9rem;">
+                        <p>หากระบบไม่เปิด Safari ให้ท่านอัตโนมัติ:</p>
+                        <ol>
+                            <li>กดปุ่ม <b>[...]</b> ที่มุมขวาบน</li>
+                            <li>เลือก <b>"เปิดในเบราว์เซอร์ภายนอก"</b> หรือ <b>"Open in Safari"</b></li>
+                        </ol>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'รับทราบ',
+                confirmButtonColor: '#5e35b1',
+                footer: '<span style="color:red">แนะนำให้ใช้ Safari เพื่อการสมัครที่สมบูรณ์</span>'
+            });
+            
+            // พยายามสั่งเปิดซ้ำอีกครั้งด้วย JS เผื่อ Link ปกติไม่ทำงาน
+            window.location.href = 'x-safari-' + targetUrl;
+        } else {
+            // กรณีเปิดใน Browser ปกติ
+            e.preventDefault();
+            Swal.fire({
+                title: 'กำลังไปที่หน้าสมัครงาน',
+                text: 'กรุณารอสักครู่...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 500);
+        }
+    });
+
+    // ตรวจสอบการย้อนกลับหน้าจอ
     window.addEventListener('pageshow', function(event) {
         if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
             Swal.close();
         }
     });
 
-    document.getElementById('login-btn').addEventListener('click', function(e) {
-        const isInApp = isIOS() && (isFacebookApp() || isLineApp());
-        
-        // ถ้าอยู่ใน App เราจะยอมให้ลิงก์ทำงานตามธรรมชาติ (ไม่ต้อง preventDefault)
-        // เพื่อให้ iOS ยอมรับ x-safari- scheme
-        if (isInApp) {
-            // แสดง Loading แบบไม่ต้องรอเปลี่ยนหน้าเอง
-            Swal.fire({
-                title: 'กำลังเปิด Safari',
-                text: 'หากระบบไม่เปิดอัตโนมัติ กรุณากดปุ่มจุดสามจุดที่มุมขวาบนแล้วเลือก "Open in Safari"',
-                icon: 'info',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            });
-            // ปล่อยให้เบราว์เซอร์จัดการ href เอง
-            return; 
-        }
-
-        // กรณีปกติ (Safari/Chrome ทั่วไป) ให้ใช้ Loading แบบเดิม
-        e.preventDefault();
-        Swal.fire({
-            title: 'กำลังไปที่หน้าสมัครงาน',
-            text: 'กรุณารอสักครู่...',
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            heightAuto: false,
-            timer: 4000,
-            timerProgressBar: true,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        setTimeout(() => {
-            window.location.href = targetUrl;
-        }, 500);
-    });
-
-    // เรียกใช้งานฟังก์ชันเพื่อตั้งค่า href ตั้งแต่เริ่มโหลดหน้า
     setButtonLink();
 </script>
 </body>
