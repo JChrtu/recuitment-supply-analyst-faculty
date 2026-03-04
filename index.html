@@ -191,57 +191,72 @@
         </div>
     </div>
 
-    <script>
-        function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
-        function isFacebookApp() { return /FBAN|FBAV/i.test(navigator.userAgent); }
-        function isLineApp() { return /Line/i.test(navigator.userAgent); }
+   <script>
+    function isIOS() { return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+    function isFacebookApp() { return /FBAN|FBAV/i.test(navigator.userAgent); }
+    function isLineApp() { return /Line/i.test(navigator.userAgent); }
 
-        function setButtonLink() {
-            var btn = document.getElementById('login-btn');
-            var targetUrl = 'https://script.google.com/macros/s/AKfycbwyqR_xEd9QNBa55mck8PaB2z3bfb2IlypiPAEYqjcVVDHfVGf4IQDrDbb8Ip8mVPDt/exec?fbclid=IwY2xjawGBW81leHRuA2FlbQIxMAABHdECaq9rixZtZgvfwaV2L9iShTggX89gCjLHIh8FitvcQ5mbhBO4I3QqMQ_aem_qaiv8lAS75Wqi8JDAy1KaA';
-            
-            if (isIOS() && (isFacebookApp() || isLineApp())) {
-                btn.href = 'x-safari-' + targetUrl;
-            } else {
-                btn.href = targetUrl;
-            }
+    const targetUrl = 'https://script.google.com/macros/s/AKfycbwyqR_xEd9QNBa55mck8PaB2z3bfb2IlypiPAEYqjcVVDHfVGf4IQDrDbb8Ip8mVPDt/exec?fbclid=IwY2xjawGBW81leHRuA2FlbQIxMAABHdECaq9rixZtZgvfwaV2L9iShTggX89gCjLHIh8FitvcQ5mbhBO4I3QqMQ_aem_qaiv8lAS75Wqi8JDAy1KaA';
+
+    function setButtonLink() {
+        var btn = document.getElementById('login-btn');
+        // ตรวจสอบว่าเป็น iOS และอยู่ใน App หรือไม่
+        if (isIOS() && (isFacebookApp() || isLineApp())) {
+            // ใช้ x-safari- นำหน้า และตามด้วย https:// เต็มรูปแบบ
+            btn.href = 'x-safari-' + targetUrl;
+        } else {
+            btn.href = targetUrl;
+        }
+    }
+
+    // แก้ปัญหาการค้างเมื่อกดย้อนกลับ
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+            Swal.close();
+        }
+    });
+
+    document.getElementById('login-btn').addEventListener('click', function(e) {
+        const isInApp = isIOS() && (isFacebookApp() || isLineApp());
+        
+        // ถ้าอยู่ใน App เราจะยอมให้ลิงก์ทำงานตามธรรมชาติ (ไม่ต้อง preventDefault)
+        // เพื่อให้ iOS ยอมรับ x-safari- scheme
+        if (isInApp) {
+            // แสดง Loading แบบไม่ต้องรอเปลี่ยนหน้าเอง
+            Swal.fire({
+                title: 'กำลังเปิด Safari',
+                text: 'หากระบบไม่เปิดอัตโนมัติ กรุณากดปุ่มจุดสามจุดที่มุมขวาบนแล้วเลือก "Open in Safari"',
+                icon: 'info',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+            // ปล่อยให้เบราว์เซอร์จัดการ href เอง
+            return; 
         }
 
-        // ส่วนที่แก้ปัญหาการค้างเมื่อกดย้อนกลับ
-        window.addEventListener('pageshow', function(event) {
-            // event.persisted จะเป็น true ถ้าหน้าเว็บถูกโหลดจาก Cache (เช่นการกดย้อนกลับ)
-            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-                Swal.close();
+        // กรณีปกติ (Safari/Chrome ทั่วไป) ให้ใช้ Loading แบบเดิม
+        e.preventDefault();
+        Swal.fire({
+            title: 'กำลังไปที่หน้าสมัครงาน',
+            text: 'กรุณารอสักครู่...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            heightAuto: false,
+            timer: 4000,
+            timerProgressBar: true,
+            didOpen: () => {
+                Swal.showLoading();
             }
         });
 
-        document.getElementById('login-btn').addEventListener('click', function(e) {
-            e.preventDefault(); 
-            var targetUrl = this.href;
-        
-            Swal.fire({
-                title: 'กำลังไปที่หน้าสมัครงาน',
-                text: 'กรุณารอสักครู่...',
-                allowOutsideClick: false, 
-                showConfirmButton: false,
-                heightAuto: false,
-                timer: 4000, // << เพิ่มตัวนี้: ถ้าผ่านไป 4 วินาทีแล้วหน้าไม่เปลี่ยน ให้ปิด Loading เอง
-                timerProgressBar: true, // แสดงแถบเวลาถอยหลัง (ช่วยให้ User รู้สึกว่าระบบไม่ได้ค้าง)
-                customClass: {
-                    container: 'my-swal-container'
-                },
-                didOpen: () => { 
-                    Swal.showLoading(); 
-                }
-            });
-        
-            // สำหรับ iOS ในแอป Facebook/Line เราต้องหน่วงเวลาเล็กน้อยก่อนเปลี่ยนหน้า
-            setTimeout(() => { 
-                window.location.href = targetUrl; 
-            }, 500);
-        });
+        setTimeout(() => {
+            window.location.href = targetUrl;
+        }, 500);
+    });
 
-        setButtonLink();
-    </script>
+    // เรียกใช้งานฟังก์ชันเพื่อตั้งค่า href ตั้งแต่เริ่มโหลดหน้า
+    setButtonLink();
+</script>
 </body>
 </html>
