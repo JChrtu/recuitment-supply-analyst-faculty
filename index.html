@@ -200,40 +200,58 @@
 
     function setButtonLink() {
         var btn = document.getElementById('login-btn');
-        // ถ้าเป็น iOS ใน App ให้ใช้ Scheme ล่อไว้ก่อน
+        // เซ็ตลิงก์ปกติไว้ก่อน
+        btn.href = targetUrl;
+        
+        // เพิ่ม target="_blank" เผื่อในบางกรณีที่เบราว์เซอร์ยอมให้เปิดแท็บใหม่
         if (isIOS() && (isFacebookApp() || isLineApp())) {
-            btn.href = 'x-safari-' + targetUrl;
-        } else {
-            btn.href = targetUrl;
+            btn.target = "_blank";
         }
     }
 
     document.getElementById('login-btn').addEventListener('click', function(e) {
-        if (isIOS() && (isFacebookApp() || isLineApp())) {
-            // กรณีอยู่ใน Facebook/Line (iPhone)
-            // เราจะไม่ใช้ e.preventDefault() เพื่อให้ href="x-safari-..." ทำงานทันทีที่คลิก
+        const isInApp = isIOS() && (isFacebookApp() || isLineApp());
+
+        if (isInApp) {
+            // หยุดการทำงานของปุ่มเพื่อแสดง Popup ก่อน
+            e.preventDefault(); 
             
             Swal.fire({
-                title: 'กำลังเปิดใน Safari',
+                title: 'ไม่สามารถเปิดระบบใน Facebook ได้',
                 html: `
-                    <div style="text-align: left; font-size: 0.9rem;">
-                        <p>หากระบบไม่เปิด Safari ให้ท่านอัตโนมัติ:</p>
-                        <ol>
-                            <li>กดปุ่ม <b>[...]</b> ที่มุมขวาบน</li>
-                            <li>เลือก <b>"เปิดในเบราว์เซอร์ภายนอก"</b> หรือ <b>"Open in Safari"</b></li>
-                        </ol>
-                    </div>
+                    <p style="font-size: 0.95rem; margin-bottom: 15px; color: #555;">
+                        กรุณาคัดลอกลิงก์ด้านล่างนี้ แล้วนำไปเปิดในแอป <b>Safari</b> หรือ <b>Chrome</b> เพื่อทำการสมัครครับ
+                    </p>
+                    <input type="text" id="copy-url-input" value="${targetUrl}" 
+                           style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 15px; color: #666; font-size: 0.8rem;" readonly>
                 `,
-                icon: 'info',
-                confirmButtonText: 'รับทราบ',
+                icon: 'warning',
+                showCancelButton: true,
                 confirmButtonColor: '#5e35b1',
-                footer: '<span style="color:red">แนะนำให้ใช้ Safari เพื่อการสมัครที่สมบูรณ์</span>'
+                cancelButtonColor: '#d33',
+                confirmButtonText: '📋 คัดลอกลิงก์',
+                cancelButtonText: 'ปิด'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // คำสั่งคัดลอกลิงก์
+                    const copyInput = document.getElementById("copy-url-input");
+                    copyInput.select();
+                    copyInput.setSelectionRange(0, 99999); // สำหรับมือถือ
+                    navigator.clipboard.writeText(copyInput.value).then(() => {
+                        Swal.fire({
+                            title: 'คัดลอกสำเร็จ!',
+                            text: 'กรุณาสลับไปที่แอป Safari แล้วกด "วาง" เพื่อเข้าสู่ระบบครับ',
+                            icon: 'success',
+                            confirmButtonColor: '#5e35b1'
+                        });
+                    }).catch(err => {
+                        console.error('ไม่สามารถคัดลอกได้: ', err);
+                    });
+                }
             });
-            
-            // พยายามสั่งเปิดซ้ำอีกครั้งด้วย JS เผื่อ Link ปกติไม่ทำงาน
-            window.location.href = 'x-safari-' + targetUrl;
+
         } else {
-            // กรณีเปิดใน Browser ปกติ
+            // กรณีเข้าผ่านเบราว์เซอร์ปกติ (Safari/Chrome)
             e.preventDefault();
             Swal.fire({
                 title: 'กำลังไปที่หน้าสมัครงาน',
